@@ -1,0 +1,16 @@
+loader:
+  h5ad_path: data/global_integrated_scp_lite.h5ad
+
+embedding:
+  pca_key: X_pca
+  n_neighbors: 30
+  umap_min_dist: 0.01
+  umap_spread: 0.7
+  umap_random_state: 42
+  tsne_perplexity: 30.0
+  tsne_random_state: 42
+
+cell_type_key: cell_type_level2
+condition_key: condition
+
+save_computed_h5ad: false

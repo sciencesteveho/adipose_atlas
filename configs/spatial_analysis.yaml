@@ -1,0 +1,49 @@
+loader:
+  xenium_h5ad_path: data/xenium_nuclei_segmentation_scp.h5ad
+  subsample_n: null
+  seed: 42
+
+spatial:
+  spatial_xy_key: spatial
+
+proximity:
+  cell_state_key: cell_state
+  sample_key: biosample_id
+  radius_um: 300.0
+  exclude_states: ["Unassigned"]
+  state_order: null
+
+stress:
+  cell_state_key: cell_state
+  condition_key: condition
+  niche_key: niche
+  exclude_states: ["Unassigned"]
+  state_order: null
+  stressed_states: ["AD3", "APC2", "EC2", "Mu4"]
+  bin_um: 50.0
+  layer_for_raw: null
+  score_key: Stress_Score_raw
+
+stress_markers:
+  - NAMPT
+  - ETV6
+  - BTG2
+  - MCL1
+  - CCN1
+  - ELOVL5
+  - STAT3
+  - ITGAV
+  - JUNB
+  - ITGB1
+  - JUN
+  - ADAMTS1
+  - OSMR
+  - ATF3
+  - FOSB
+  - ZFP36
+  - HIF1A
+  - RFX2
+  - MYC
+  - CDKN1A
+  - EGFR
+  - EGR1

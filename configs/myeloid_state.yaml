@@ -1,0 +1,67 @@
+loader:
+  h5ad_path: data/global_integrated_scp_lite.h5ad
+  subsample_n: null
+  seed: 42
+
+output_dir: ./results/myeloid_lineage_analysis
+
+embedding:
+  pca_key: X_pca
+  n_neighbors: 75
+  umap_min_dist: 0.3
+  umap_spread: 0.8
+  umap_random_state: 42
+
+cell_type_key: cell_type_level1
+myeloid_label: Myeloid
+cell_state_key: cell_state
+condition_key: condition
+
+dotplot_genes:
+  - PTPRC
+  - PPARG
+  - CD68
+  - CD14
+  - CCL2
+  - ITGAX
+  - ITGAM
+  - MRC1
+  - MSR1
+  - CD163
+  - HLA-DRB1
+  - HLA-DRA
+  - BANK1
+  - EBF1
+  - RALGPS2
+  - LYVE1
+  - FGF13
+  - FOLR2
+  - LPL
+  - PLA2G7
+  - TREM2
+  - MS4A6A
+  - PKP2
+  - CLEC12A
+  - CIITA
+  - IL1R2
+  - FLT3
+  - VCAN
+  - FCN1
+  - PLCB1
+  - DHRS9
+  - SLC18B1
+  - ST5
+  - ITGAL
+  - ADGRE2
+  - FCGR3A
+  - POLQ
+  - TOP2A
+  - CENPK
+  - CLNK
+  - CLEC9A
+  - XCR1
+  - TLR7
+  - CLEC4C
+  - CUX2
+  - CCL3L1
+  - CXCL3
