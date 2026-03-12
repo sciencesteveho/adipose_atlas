@@ -27,7 +27,7 @@ conda activate adipose_atlas
 python -m pip install -U pip setuptools wheel
 
 # Install package
-git clone <INSERT_AFTER_PUSH>
+git clone https://github.com/sciencesteveho/adipose_atlas.git
 cd adipose_atlas
 pip install -e ".[dev]"
 ```
