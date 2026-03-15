@@ -47,7 +47,7 @@ class CellStateProximityMatrix:
         self.adata = adata
         self.spatial = spatial
         self.cell_state_key = cell_state_key
-        self.radius_um = float(radius_um)
+        self.radius_um = radius_um
         self.sample_key = sample_key
         self.exclude_states = exclude_states
         self.state_order = list(state_order) if state_order is not None else None

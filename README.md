@@ -51,7 +51,7 @@ But the [results were not interpretable](docs/_static/umap_cell_type_umap.png). 
 
 
 ```
-Raw counts → normalize to 10k → log1p normalization → subset to HVG → regress out → scale → PCA → Harmony → neighbors
+Raw counts → normalize to 10k → log1p normalization → subset to HVG → regress out → PCA → Harmony → neighbors
 ```
 The cell type proportion figure is a reproduction of (**Fig. 1d**). I opted to color the projection according to the cell states provided from the original paper as opposed to re-running leiden clustering due to the differences discussed above. The entry point is:
 ```sh

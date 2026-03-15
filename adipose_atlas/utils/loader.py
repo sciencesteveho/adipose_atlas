@@ -54,9 +54,7 @@ class AnnDataLoader:
             raise FileNotFoundError(f"Xenium h5ad not found at: {path}")
 
         logger.info(f"Loading Xenium AnnData from {path}...")
-        adata = sc.read_h5ad(path)
-
-        return adata
+        return sc.read_h5ad(path)
 
     def _subsample_copy(self, adata: ad.AnnData) -> ad.AnnData:
         """Subsample the AnnData object.

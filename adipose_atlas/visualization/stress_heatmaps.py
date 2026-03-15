@@ -30,7 +30,7 @@ def plot_spatial_stress_heatmaps(
     """
     _set_matplotlib_publication_parameters()
 
-    n_states = int(len(states))
+    n_states = len(states)
     n_top, n_mid, n_bot = (
         1,
         int(quantile_proportions.shape[0]),

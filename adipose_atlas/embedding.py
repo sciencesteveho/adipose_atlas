@@ -50,7 +50,7 @@ class DimensionalityReducer:
 
         Pipeline:
             raw counts → normalize to 10k → log1p normalization → subset to HVG
-            → regress out → scale → PCA → Harmony → neighbors
+            → regress out → PCA → Harmony → neighbors
 
         Mutates adata in place. After this function:
           - adata.X contains regressed and scaled HVG matrix
@@ -74,16 +74,16 @@ class DimensionalityReducer:
         self._validate_preprocessing(adata, batch_key, regress_keys)
 
         logger.info("Using raw counts (adata.raw.X).")
-        if "counts" not in adata.layers:
-            adata.layers["counts"] = adata.raw.X
-        adata.X = adata.layers["counts"]
+        adata.X = adata.raw.X.copy()  # type: ignore
 
         logger.info(f"Normalizing to {target_sum:.0f} counts per cell...")
-        sc.pp.normalize_total(adata, target_sum=float(target_sum))
+
+        sc.pp.normalize_total(adata, target_sum=target_sum)
 
         logger.info("Log1p transforming...")
         sc.pp.log1p(adata)
-        adata.raw = adata
+
+        adata.raw = adata.copy()
 
         logger.info("Computing highly variable genes...")
         sc.pp.highly_variable_genes(
@@ -100,15 +100,10 @@ class DimensionalityReducer:
         sc.pp.regress_out(adata, keys)
 
         logger.info(f"Scaling (max_value={scale_max_value})...")
-        sc.pp.scale(adata, max_value=float(scale_max_value))
+        # sc.pp.scale(adata, max_value=scale_max_value)
 
         logger.info(f"Computing PCA (n_comps={n_pcs})...")
-        sc.tl.pca(
-            adata,
-            svd_solver="arpack",
-            n_comps=int(n_pcs),
-            random_state=int(seed),
-        )
+        sc.tl.pca(adata, svd_solver="arpack", n_comps=n_pcs, random_state=seed)
 
         logger.info(f"Running Harmony (batch_key={batch_key})...")
         ho = hm.run_harmony(
@@ -118,19 +113,19 @@ class DimensionalityReducer:
             epsilon_harmony=-float("Inf"),
             epsilon_cluster=-float("Inf"),
             tau=harmony_tau,
-            max_iter_kmeans=int(harmony_max_iter_kmeans),
-            max_iter_harmony=int(harmony_max_iter),
-            random_state=int(seed),
-            device="cpu",  # force cpu to avoid apple silicon GPU issues
+            max_iter_kmeans=harmony_max_iter_kmeans,
+            max_iter_harmony=harmony_max_iter,
+            random_state=seed,
+            device="cpu",
         )
 
-        Z = self._coerce_harmony_output(
+        ho_shape_corrected = self._coerce_harmony_output(
             ho.Z_corr,
             n_obs=adata.n_obs,
         )
 
-        logger.info(f"Harmony corrected PCA shape: {Z.shape}")
-        adata.obsm["X_pca"] = Z
+        logger.info(f"Harmony corrected PCA shape: {ho_shape_corrected.shape}")
+        adata.obsm["X_pca"] = ho_shape_corrected
         logger.info("Harmony correction applied to adata.obsm['X_pca'].")
 
     def compute_neighbors(
@@ -154,11 +149,11 @@ class DimensionalityReducer:
         sc.pp.neighbors(
             adata=adata,
             use_rep=str(self.config.pca_key),
-            n_pcs=int(n_pcs),
-            n_neighbors=int(n_neighbors),
+            n_pcs=n_pcs,
+            n_neighbors=n_neighbors,
             metric=metric,  # type: ignore
             method=method,  # type: ignore
-            random_state=int(random_state),
+            random_state=random_state,
         )
 
     def compute_embeddings(
@@ -214,18 +209,18 @@ class DimensionalityReducer:
         batch_key: str,
         regress_keys: Sequence[str],
     ) -> None:
+        """Check that adata.raw is present and required obs cols are available."""
         if adata.raw is None:
             raise ValueError(
                 "adata.raw is None. Expected raw integer counts in adata.raw.X."
             )
         required = list(regress_keys) + [batch_key]
-        missing = [k for k in required if k not in adata.obs.columns]
-        if missing:
+        if missing := [k for k in required if k not in adata.obs.columns]:
             raise ValueError(f"Missing required obs columns: {missing}")
 
     @staticmethod
     def _coerce_harmony_output(
-        Z_corr: np.ndarray,
+        z_corr: np.ndarray,
         n_obs: int,
     ) -> np.ndarray:
         """Coerce Harmony output to a NumPy array with shape (n_obs, n_pcs).
@@ -234,25 +229,21 @@ class DimensionalityReducer:
             Z_corr: Harmony-corrected embedding from Harmony output (ho.Z_corr).
             n_obs: Expected number of observations (cells).
         """
-        Z = Z_corr
-        if hasattr(Z, "cpu"):
-            Z = Z.detach().cpu().numpy()  # type: ignore
-        else:
-            Z = np.asarray(Z)
-
+        output = z_corr
+        output = output.detach().cpu().numpy() if hasattr(output, "cpu") else np.asarray(output)  # type: ignore
         # harmonypy sometimes returns (pcs, cells)
-        if Z.ndim != 2:
+        if output.ndim != 2:
             raise ValueError(
-                f"Harmony output must be 2D. Got shape={getattr(Z, 'shape', None)}"
+                f"Harmony output must be 2D. Got shape={getattr(output, 'shape', None)}"
             )
 
-        if Z.shape[0] != n_obs:
-            if Z.shape[1] == n_obs:
-                Z = Z.T
+        if output.shape[0] != n_obs:
+            if output.shape[1] == n_obs:
+                output = output.T
             else:
                 raise ValueError(
-                    f"Harmony  output has unexpected shape {Z.shape}; expected first or second "
+                    f"Harmony output has unexpected shape {output.shape}; expected first or second "
                     f"dimension to equal n_obs={n_obs}."
                 )
 
-        return Z
+        return output

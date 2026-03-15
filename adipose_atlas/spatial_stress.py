@@ -145,12 +145,12 @@ def _resolve_raw_matrix(
     layer over adata.raw then adata.X.
     """
     if layer_for_raw is not None and layer_for_raw in adata.layers:
-        X = adata.layers[layer_for_raw]
+        matrix = adata.layers[layer_for_raw]
     elif adata.raw is not None:
-        X = adata.raw.X
+        matrix = adata.raw.X
     else:
-        X = adata.X
-    return sp.csr_matrix(X) if not sp.issparse(X) else X.tocsr()  # type: ignore
+        matrix = adata.X
+    return matrix.tocsr() if sp.issparse(matrix) else sp.csr_matrix(matrix)  # type: ignore
 
 
 def _build_bin_obs(
@@ -207,15 +207,15 @@ def _aggregate_cells_into_spatial_bins(
 
     # Round coordinates to bin grid and combine with condition to form unique
     # bin keys
-    bin_x = np.round(x_coords[valid] / float(bin_um)).astype(int)
-    bin_y = np.round(y_coords[valid] / float(bin_um)).astype(int)
+    bin_x = np.round(x_coords[valid] / bin_um).astype(int)
+    bin_y = np.round(y_coords[valid] / bin_um).astype(int)
     valid_conditions = conditions[valid]
 
     bin_keys = pd.Series(
         bin_x.astype(str) + "_" + bin_y.astype(str) + "__" + valid_conditions
     )
     bin_codes, bin_uniques = pd.factorize(bin_keys, sort=False)
-    n_bins = int(len(bin_uniques))
+    n_bins = len(bin_uniques)
 
     # Sparse aggregation matrix sums expression across all cells sharing a bin
     aggregation_matrix = sp.csr_matrix(

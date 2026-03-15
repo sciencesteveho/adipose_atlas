@@ -82,12 +82,12 @@ def plot_celltype_abundance(
     )
 
     if category_order is None:
-        categories = [c for c in df[category_key].dropna().unique().tolist()]
+        categories = list(df[category_key].dropna().unique().tolist())
     else:
         categories = list(category_order)
 
     groups = list(group_order)
-    if len(groups) == 0:
+    if not groups:
         raise ValueError("group_order is empty.")
 
     if group_labels is None:

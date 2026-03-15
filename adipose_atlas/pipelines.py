@@ -46,15 +46,13 @@ sc.settings.n_jobs = 1
 
 def _ensure_obs_keys(adata: AnnData, keys: List[str]) -> None:
     """Ensure obs has required keys."""
-    missing = [k for k in keys if k not in adata.obs.columns]
-    if len(missing) > 0:
+    if missing := [k for k in keys if k not in adata.obs.columns]:
         raise ValueError(f"Missing required obs keys: {missing}")
 
 
 def _ensure_obsm_keys(adata: AnnData, keys: List[str]) -> None:
     """Ensure obsm has required keys."""
-    missing = [k for k in keys if k not in adata.obsm]
-    if len(missing) > 0:
+    if missing := [k for k in keys if k not in adata.obsm]:
         raise ValueError(f"Missing required obsm keys: {missing}")
 
 
